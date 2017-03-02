@@ -1,0 +1,97 @@
+/%
+ % Project: E.R.I.K.A. - Embedded Real tIme Kernel Architecture
+ %
+ % http://erika.sssup.it
+ %
+ % Copyright (C) 2004 Riccardo Vestrini
+ %
+ % This program is distributed under the license contained into the
+ % license.txt file on the E.R.I.K.A. root directory.
+ %
+ % CVS: $Id: ErikaOnOffButton.tlc,v 1.1 2004/06/01 16:42:38 vestrini Exp $
+ %/
+
+%implements  ErikaOnOffButton "C"
+
+
+%function BlockInstanceSetup(block, system) Output
+  %assign currentoutput = LibBlockDWork(DWork[0], "","", 0)
+  %%
+  %if UseInterrupt == 1
+    %openfile buffer
+    /* Interrupt handler for input device %<Name> */
+    ISR(%<InterruptHandler>)
+    {
+      %if OutputModeEdge==1
+	%<currentoutput> = !%<currentoutput>;
+      %else
+	%<currentoutput> = 1;
+      %endif
+    }
+    %closefile buffer
+    %<LibCacheGlobalPrmData(buffer)>
+  %endif
+
+  %if !EXISTS(::MainIncludeAdded)
+    %<LibAddToCommonIncludes("code.h")>
+    %assign ::MainIncludeAdded = 1
+  %endif
+%endfunction
+
+
+%function Update(block, system) Output
+  %assign currentoutput = LibBlockDWork(DWork[0], "","", 0)
+  %if OutputModePass == 0
+    %assign previousinput = LibBlockDWork(DWork[1], "","", 0)
+  %endif
+  %%
+  %if UseInterrupt == 0
+    %if OutputModePass == 1
+      %<currentoutput> = ERIKA_button_pressed(ONOFF_BUTTON);
+    %elseif OutputModeTrigger == 1
+      if (!%<currentoutput> && !%<previousinput> &&
+          ERIKA_button_pressed(ONOFF_BUTTON) )
+	%<currentoutput> = 1;
+      else
+        %<currentoutput> = 0;
+      %<previousinput> = ERIKA_button_pressed(ONOFF_BUTTON);
+    %elseif OutputModeEdge == 1
+      if (ERIKA_button_pressed(ONOFF_BUTTON) && !%<previousinput>)
+        %<currentoutput> = !%<currentoutput>;
+      %<previousinput> = ERIKA_button_pressed(ONOFF_BUTTON);
+    %endif
+  %endif
+%endfunction
+
+%function Outputs(block, system) Output
+  %assign currentoutput = LibBlockDWork(DWork[0], "","", 0)
+  %assign output = LibBlockOutputSignal(0, "", "", 0)
+  %%
+  /* Input Device: %<Name> */
+  %<output> = %<currentoutput>;
+  %if UseInterrupt && OutputModeTrigger
+    %<currentoutput> = 0;
+  %endif
+%endfunction
+
+
+%function Start(block, system) Output
+  /* Input Device: %<Name> */
+  %if UseInterrupt == 1
+    /* Handler for block %<Name> */
+    ERIKA_set_handler(%<IRQ>, %<InterruptHandler>);
+    ERIKA_enable_irq(%<IRQ>);
+    %if !EXISTS(::OnOffEdgeRunEdgeAdded)
+      ERIKA_button_irq_mode(ONOFF_EDGE_RUN_EDGE);
+      %assign ::OnOffEdgeRunEdgeAdded = 1
+    %endif
+  %endif
+  %if !UseInterrupt && !OutputModePass
+    %assign previousinput = LibBlockDWork(DWork[1], "","", 0)
+    %<previousinput> = 0;
+  %endif
+  %assign currentoutput = LibBlockDWork(DWork[0], "","", 0)
+  %<currentoutput> = 0;
+%endfunction
+
+

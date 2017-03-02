@@ -1,0 +1,68 @@
+/%
+ % Project: E.R.I.K.A. - Embedded Real tIme Kernel Architecture
+ %
+ % http://erika.sssup.it
+ %
+ % Copyright (C) 2004 Riccardo Vestrini
+ %
+ % This program is distributed under the license contained into the
+ % license.txt file on the E.R.I.K.A. root directory.
+ %
+ % CVS: $Id: ErikaMotors.tlc,v 1.1 2004/06/01 16:42:37 vestrini Exp $
+ %/
+
+%implements  ErikaMotors "C"
+
+%function BlockTypeSetup(block, system) void
+  %if !EXISTS(::MainIncludeAdded)
+    %<LibAddToCommonIncludes("code.h")>
+    %assign ::MainIncludeAdded = 1
+  %endif
+%endfunction
+
+
+%function Outputs(block, system) Output
+  /* Block: %<Name> */
+  %if (PortAUsed == 1) && (PortCUsed==0)
+    %assign power = LibBlockInputSignal(0, "", "", 0)
+    %if FastImplementation == 1
+      ERIKA_PWM_set(%<power>,0);
+    %else
+      %assign direction = LibBlockInputSignal(1, "", "", 0) 
+      ERIKA_PWM_set(%<power>, 0, 0x40 << %<direction>, 0);
+    %endif
+  %endif
+  %if (PortAUsed == 0) && (PortCUsed==1)
+    %assign power = LibBlockInputSignal(0, "", "", 0)
+    %if FastImplementation == 1
+      ERIKA_PWM_set(0,%<power>);
+    %else
+      %assign direction = LibBlockInputSignal(1, "", "", 0) 
+      ERIKA_PWM_set(0, %<power>, 0, 0x01 << %<direction>);
+    %endif
+  %endif
+  %if (PortAUsed == 1) && (PortCUsed==1)
+    %assign powera = LibBlockInputSignal(0, "", "", 0)
+    %if FastImplementation == 1
+      %assign powerc = LibBlockInputSignal(1, "", "", 0)
+      ERIKA_PWM_set(%<powera>,%<powerc>);
+    %else
+      %assign powerc = LibBlockInputSignal(2, "", "", 0)
+      %assign directiona = LibBlockInputSignal(1, "", "", 0) 
+      %assign directionc = LibBlockInputSignal(3, "", "", 0) 
+      ERIKA_PWM_set(%<powera>, %<powerc>, 0x40 << %<directiona>, 0x01 << %<directionc>);
+    %endif
+  %endif
+%endfunction
+
+%function Terminate(block, system) Output
+  /* Stops motors */
+  %if FastImplementation==1
+    ERIKA_PWM_set(0,0);
+  %else
+    ERIKA_PWM_set(0,0,0x40,0x01);
+  %endif
+  //  ERIKA_PWM_end();
+  MotorDevReg = 0x00;
+%endfunction
+

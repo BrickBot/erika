@@ -1,0 +1,38 @@
+Hi all,
+
+this directory contains an enhancement of the demos/h8/vehicle
+application. The application now makes full use of alarms, serial I/O
+for infrared input, C++.
+
+The application has been almost completely rewritten; now the
+application is divided in a few parts:
+
+- application behavior
+- mode change
+- peripheral handling
+- control algorithm
+
+A simple DIA diagram is provided (state.[eps,dia]) to show the
+meanings of the mode change.
+
+The application is provided in different versions:
+
+- nonosek
+  a plain version that uses the standard ERIKA Educational interface
+
+- osek 
+  the application tasks are written as if the available kernel
+  was an osek bcc1 compliant system
+
+- actors
+  the application is completely rewritten using a C++ modeling
+  paradigm; the osek interface and the math library is also wrapped in
+  C++. Currently this is a work in progress.
+
+Final note: commands are sent to the RCX using the program
+http://erika.sssup.it/distrib/send.c
+
+Enjoy,
+
+Paolo Gai
+pj@sssup.it

@@ -1,0 +1,114 @@
+ErikaLcdDisplay.dll
+ErikaLcdDisplay.mexglx
+ErikaLcdDisplay.tif
+ErikaLcdDisplay.tlc
+ErikaOnOffButton.dll
+ErikaOnOffButton.mexglx
+ErikaOnOffButton.tif
+ErikaOnOffButton.tlc
+ErikaPWMMotor.dll
+ErikaPWMMotor.mexglx
+ErikaPWMMotor.tif
+ErikaPWMMotor.tlc
+ErikaRunButton.dll
+ErikaRunButton.mexglx
+ErikaRunButton.tif
+ErikaRunButton.tlc
+ErikaSensors.dll
+ErikaSensors.mexglx
+ErikaSensors.tif
+ErikaSensors.tlc
+ErikaTerminate.dll
+ErikaTerminate.mexglx
+ErikaTerminate.tif
+ErikaTerminate.tlc
+ErikaEducationalLibrary.mdl
+
+these are Matlab files, usable to simulate a Lego model with Simulink
+
+for them to work, you have to:
+own Matlab with Simulink
+use command "addpath THISDIR" in Matlab command window
+open file ErikaEducationalLibrary.mdl with Simulink
+add blocks to a Simulink model
+
+solver type must be fixed step
+
+.dll files are for Windows os, .mexglx for Linux os; 
+.dll files have to be recompiled them mex command in Matlab command window
+.c files are sources
+.tif are the images used in ErikaEducationalLibrary.mdl
+.tlc are used in code generation to generate code for the block
+
+ErikaEducational_make_rtw_hook.m
+ErikaEducational_rtw_info_hook.m
+these are files needed by Matlab code generation process
+
+Makefile
+this file is used to create librtw.a compiled for h8, 
+you may try to recompile librtw optimized for size or with 
+-03 optimization, just edit the Makefile
+
+ErikaEducational.xslt is an XSLT script to generate options command for TLC targets,
+ErikaEducational.xml contains options for ErikaEducational target
+
+Matlab and tlc files have been written using Emacs with tlc.el and matlab.el
+(distributed by MathWorks)
+
+
+ErikaEducational.tlc
+SubsystemXML.tlc
+erikatlclib.tlc
+ErikaEducational.tmf
+
+these files are used to generate code for a LEGO RCX with Matlab
+
+for them to work, you have to:
+own RealTime Workshop (and better Embedded Coder)
+install Erika
+install gcc 3, with newlib and binutils
+use command "addpath THISDIR" at Matlab command window
+create a model with blocks from here
+select ErikaEducational.tlc and ErikaEducational.tmf as target and target makefile in RealTime Workshop options
+choose appropriate options for code generation
+choose "Generate code"
+...
+
+model must be divided in atomic subsystems, each atomic subsystems will become a task
+
+you have to create a Task configuration file to configure tasks (priorities, periods, etc.), otherwise a default (almost random...) configuration will be used 
+a task configuration file is a tlc file with the following sintax:
+
+%createrecord ErikaEducational { NumberOfTasks 2 ; ...
+  Task { ...
+       Name "Pluto";  ...
+       PriorityReady "1"; ...
+       PriorityDispatch "1"; ...
+       NumberOfProcs 2; Rate 100; ...
+       Proc { Name "function_Pluto_Output"} ...
+       Proc { Name "function_Pluto_Update"} ...
+       } ...
+  Task { ...
+       Name "Pippo";  ...
+       PriorityReady "2"; ...
+       PriorityDispatch "2"; ...
+       NumberOfProcs 1; Rate 50; ...
+       Proc { Name "function_Pippo_Output"} ...
+       } ...
+}
+
+file name must be model name followed by "_tasks.tlc"
+
+Pay attention to maximum identifier length defined in general code generation options, if identifiers gets long raise it
+
+have fun!
+
+
+Riccardo Vestrini
+riccardov@sssup.it
+
+
+
+
+
+

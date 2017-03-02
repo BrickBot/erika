@@ -1,0 +1,10 @@
+this Matlab toolbox is developen on a Gnu/Linux system, 
+if you want to use it on a MS Windows environment you have to:
+recompile .c s-functions using mex in Matlab command window
+use Cygwin to install a cross-compiling gcc and make
+set "generate code only" in real-time workshop options
+
+bye 
+
+Riccardo Vestrini
+riccardov@sssup.it

@@ -1,0 +1,104 @@
+/%
+ % Project: E.R.I.K.A. - Embedded Real tIme Kernel Architecture
+ %
+ % http://erika.sssup.it
+ %
+ % Copyright (C) 2004 Riccardo Vestrini
+ %
+ % This program is distributed under the license contained into the
+ % license.txt file on the E.R.I.K.A. root directory.
+ %
+ % CVS: $Id: ErikaLightSensors.tlc,v 1.1 2004/06/01 16:42:36 vestrini Exp $
+ %/
+
+%implements  ErikaLightSensors "C"
+
+
+%function BlockTypeSetup(block, system) Output
+  %openfile buffer
+  /* variable used by block %<Name> */
+  %foreach n = 3
+    %if ErikaInputPorts[n] == 1
+      static uint16_T lightsensors_port%<n+1> = 0;
+    %endif
+  %endforeach
+
+  /* Interrupt handler for input device %<Name> */
+  ISR(%<InterruptHandler>)
+  {
+    ERIKA_ad_stop();
+    %foreach n = 3
+      %if ErikaInputPorts[n] == 1
+	lightsensors_port%<n+1> =  ERIKA_ad_get_port%<n+1>() >> %<6+(9-Sensitivity)>;
+      %endif
+    %endforeach
+    Port6 |= ~%<248+(!ErikaInputPorts[0])*4+(!ErikaInputPorts[1])*2+(!ErikaInputPorts[2])>U; ...
+      /* 11111%<!ErikaInputPorts[0]>%<!ErikaInputPorts[1]>%<!ErikaInputPorts[2]> */
+    ERIKA_ad_reset_end_flag();
+  }
+
+  %closefile buffer
+  %<LibCacheGlobalPrmData(buffer)>
+
+  %if !EXISTS(::MainIncludeAdded)
+    %<LibAddToCommonIncludes("code.h")>
+    %assign ::MainIncludeAdded = 1
+  %endif
+  %endfunction
+
+%function Start(block, system) Output
+  /* Sensors port selection for block %<Name> */
+  ERIKA_ad_select(%<64+32+16+8+ErikaInputPorts[2]*4+ErikaInputPorts[1]*2+ErikaInputPorts[0]>); ...
+    /* 01111%<ErikaInputPorts[2]>%<ErikaInputPorts[1]>%<ErikaInputPorts[0]> */
+  /* Handler for block %<Name> */
+  ERIKA_set_handler(%<IRQ>, %<InterruptHandler>);
+  ERIKA_enable_irq(%<IRQ>);
+  %if EXISTS(::SuspendedStateActive)
+    %foreach n = 3
+      %if ErikaInputPorts[n] == 1
+	lightsensors_port%<n+1> = 0;
+      %endif
+    %endforeach
+  %endif
+%endfunction
+
+
+
+%function Outputs(block, system) Output
+   /* Block: %<Name> */
+   
+  %assign m = 0
+  %foreach n = 3
+    %if ErikaInputPorts[n] == 1
+      %<LibBlockOutputSignal(m, "", "", 0)> = lightsensors_port%<n+1>;
+      %assign m = m+1
+    %endif
+  %endforeach
+%endfunction
+
+
+
+%function Update(block, system) Output
+  /* Block: %<Name> */
+  Port6 &= %<248+(!ErikaInputPorts[0])*4+(!ErikaInputPorts[1])*2+(!ErikaInputPorts[2])>U; ...
+    /* 11111%<!ErikaInputPorts[0]>%<!ErikaInputPorts[1]>%<!ErikaInputPorts[2]> */
+  int i;
+  for (i=0; i<10; i++);
+  %if FastMode == 0
+    ERIKA_ad_start();
+  %else
+    ERIKA_ad_start_fast();
+  %endif
+
+%endfunction
+
+
+
+%function Terminate(block, system) Output
+  /* terminate for block %<Name> */
+  Port6 &= 0xF8; /* 11111000 */
+  ERIKA_ad_stop();
+
+%endfunction
+
+

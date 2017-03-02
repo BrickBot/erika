@@ -1,0 +1,6 @@
+skeleton.mdl 
+a model configured to use ErikaEducational.tlc, suitable do develop a
+working model
+
+test_*.mdl
+files used to test s-functions for blocks, not useful to generate code

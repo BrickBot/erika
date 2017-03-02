@@ -1,0 +1,91 @@
+#!/usr/bin/make -f
+## Project: E.R.I.K.A. - Embedded Real tIme Kernel Architecture
+##
+## http://erika.sssup.it
+##
+## Copyright (C) 2004 Riccardo Vestrini
+##
+## This program is distributed under the GPL license contained into
+## the license.txt file on the E.R.I.K.A. root directory.
+##
+## CVS: $Id: ErikaEducational.tmf,v 1.2 2004/07/05 10:13:13 vestrini Exp $
+##
+
+MAKECMD         = make
+HOST            = UNIX
+BUILD           = yes
+SYS_TARGET_FILE = ErikaEducational.tlc
+
+#---------------------- Tokens expanded by make_rtw ----------------------------
+MODEL              	= |>MODEL_NAME<|
+MODEL_MODULES           = |>MODEL_MODULES<|
+MAKEFILE_NAME           = |>MAKEFILE_NAME<|
+MATLAB_ROOT             = |>MATLAB_ROOT<|
+S_FUNCTIONS             = |>S_FUNCTIONS<|
+S_FUNCTIONS_LIB         = |>S_FUNCTIONS_LIB<|
+NUMST                   = |>NUMST<|
+COMPUTER                = |>COMPUTER<|
+BUILDARGS               = |>BUILDARGS<|
+MULTITASKING            = |>MULTITASKING<|
+MEXEXT                  = |>MEXEXT<|
+ADD_MDL_NAME_TO_GLOBALS = |>ADD_MDL_NAME_TO_GLOBALS<|
+# '$(shell echo ...)' command is used to clear " character 
+ERIKABASE		= $(shell echo |>ERIKABASE<|)
+H8RTWLIBDIR		= $(shell echo |>H8RTWLIBDIR<|)
+RTNONFINITE		= |>RTNONFINITE<|
+
+DOWNLOADTOROBOT 	= |>DOWNLOADTOROBOT<|
+LEGOTOWERDEVICE		= $(shell echo |>LEGOTOWERDEVICE<|)
+USECUSTCOMM 		= |>USECUSTCOMM<|
+DOWNLCOMM 		= $(shell echo |>DOWNLCOMM<|)
+
+
+PROJ=$(MODEL)
+
+APP_SRCS= $(MODEL_MODULES) handlers.s $(MODEL).c
+
+
+# can causes errors
+ifeq ($(RTNONFINITE),1)
+  APP_SRCS += rt_nonfinite.c
+vpath %.c $(MATLAB_ROOT)/rtw/c/src
+endif
+
+ERIKAOPT = __FP__ __MONO__ __H8__ __ALARMS__ __GCC3__ \
+RT MODEL=$(MODEL) __TIMER_B_USER_FUNCTION_USED__ \
+MT=$(MULTITASKING) MODEL=$(MODEL) NUMST=$(NUMST) \
+ADD_MDL_NAME_TO_GLOBALS=$(ADD_MDL_NAME_TO_GLOBALS) 
+
+
+include $(MODEL)_makevars
+
+INCLUDE = $(ERIKABASE)/include $(MATLAB_ROOT)/rtw/c/libsrc \
+$(MATLAB_ROOT)/rtw/c/src $(MATLAB_ROOT)/extern/include \
+$(MATLAB_ROOT)/simulink/include . $(MATLAB_ROOT)/rtw/c/ert \
+|>START_EXPAND_INCLUDES<| |>EXPAND_DIR_NAME<| |>END_EXPAND_INCLUDES<| 
+
+LIBS=rtw
+LIBRARY_PATH=$(H8RTWLIBDIR) 
+
+# libraries not for h8 ...
+#|>START_PRECOMP_LIBRARIES<|
+#ifeq ($(OPT_OPTS),$(DEFAULT_OPT_OPTS))
+#LIBS += |>EXPAND_LIBRARY_LOCATION<|/|>EXPAND_LIBRARY_NAME<|_std
+#else
+#LIBS += |>EXPAND_LIBRARY_NAME<|
+#endif
+#|>END_PRECOMP_LIBRARIES<| |>START_EXPAND_LIBRARIES<|
+#LIBS += |>EXPAND_LIBRARY_NAME<| |>END_EXPAND_LIBRARIES<|
+
+
+include $(ERIKABASE)/config/config.mak
+
+ifeq ($(DOWNLOADTOROBOT),1)
+ifeq ($(USECUSTCOMM),1)
+all::
+	$(DOWNLCOMMAND)
+else
+all::
+	firmdl --tty=$(LEGOTOWERDEVICE) $(MODEL).srec
+endif
+endif

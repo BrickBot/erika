@@ -1,0 +1,137 @@
+%% SYSTLC: ErikaEducational TMF: ErikaEducational.tmf MAKE: make_rtw 
+%%
+%% Abstract: Erika Educational target
+%%
+
+%%
+%% Project: E.R.I.K.A. - Embedded Real tIme Kernel Architecture
+%%
+%% http://erika.sssup.it
+%%
+%% Copyright (C) 2004 Riccardo Vestrini
+%%
+%% This program is distributed under the license contained into the
+%% license.txt file on the E.R.I.K.A. root directory.
+%%
+%% CVS: $Id: ErikaEducational.tlc,v 1.2 2004/07/05 10:13:13 vestrini Exp $
+%%
+
+
+%selectfile NULL_FILE
+
+%assign TargetType = "RT"
+%assign Language   = "C"
+
+%include "erikamain.tlc"
+
+/%
+  BEGIN_RTW_OPTIONS
+  
+  rtwoptions(1).prompt = 'ErikaEducational code generation options';
+  rtwoptions(1).type = 'Category';
+  rtwoptions(1).enable = 'on';
+  rtwoptions(1).default = '5';
+  rtwoptions(1).popupstrings = '';
+  rtwoptions(1).tlcvariable = '';
+  rtwoptions(1).tooltip = '';
+  rtwoptions(1).callback = '';
+  rtwoptions(1).opencallback = '';
+  rtwoptions(1).closecallback = '';
+  rtwoptions(1).makevariable = '';
+
+    
+  rtwoptions(2).prompt = 'Var/Proc mode';
+  rtwoptions(2).type = 'Checkbox';
+  rtwoptions(2).tlcvariable = 'VarProcTask';
+  rtwoptions(2).default = 'off';
+  rtwoptions(2).tooltip = ['Model is partitioned in atomic subsystems which are mapped in task'];
+
+  rtwoptions(3).prompt = 'Have task configuration file in path';
+  rtwoptions(3).type = 'Checkbox';
+  rtwoptions(3).tlcvariable = 'TaskCF';
+  rtwoptions(3).default = 'off';
+  rtwoptions(3).tooltip = ['Exists a file named MODELNAME_tasks.tlc, used to specify task parameters and Proc mapping (only for Var/Proc mode)'];
+
+  rtwoptions(4).prompt = 'Use Embedded Coder';
+  rtwoptions(4).type = 'Checkbox';
+  rtwoptions(4).tlcvariable = 'UseERT';
+  rtwoptions(4).default = 'off';
+  rtwoptions(4).tooltip = ['Generate code using Embedded Coder target instead of Generic Real-Time target'];
+
+  rtwoptions(5).prompt = 'Debug mode';
+  rtwoptions(5).type = 'Checkbox';
+  rtwoptions(5).tlcvariable = 'DebugLcd';
+  rtwoptions(5).default = 'off';
+  rtwoptions(5).tooltip = ['Insert in code commands for writing on lcd display and compile with __DEBUG__ defined'];
+
+  rtwoptions(6).prompt = 'Include NaN and Inf variables';
+  rtwoptions(6).type = 'Checkbox';
+  rtwoptions(6).makevariable = 'RTNONFINITE';
+  rtwoptions(6).tlcvariable = 'RTNONFINITE';
+  rtwoptions(6).default = 'off';
+  rtwoptions(6).tooltip = ['Compile Real-Time workshop rt_nonfinite.c, default is disabled since it greatly enlarge output and causes errors'];
+
+  rtwoptions(7).prompt = 'ErikaEducational configuration';
+  rtwoptions(7).type = 'Category';
+  rtwoptions(7).enable = 'on';
+  rtwoptions(7).default = '6';
+  rtwoptions(7).popupstrings = '';
+  rtwoptions(7).tlcvariable = '';
+  rtwoptions(7).tooltip = '';
+  rtwoptions(7).callback = '';
+  rtwoptions(7).opencallback = '';
+  rtwoptions(7).closecallback = '';
+  rtwoptions(7).makevariable = '';
+
+    
+  rtwoptions(8).prompt = 'Download to robot';
+  rtwoptions(8).type = 'Checkbox';
+  rtwoptions(8).makevariable = 'DOWNLOADTOROBOT';
+  rtwoptions(8).tlcvariable = 'DownloadToRobot';
+  rtwoptions(8).default = 'off';
+  rtwoptions(8).tooltip = ['Download application to robot using firmdl program'];
+
+  rtwoptions(9).prompt = 'Lego tower device';
+  rtwoptions(9).type = 'Popup';
+  rtwoptions(9).makevariable = 'LEGOTOWERDEVICE';
+  rtwoptions(9).tlcvariable = 'LEGOTOWERDEVICE';
+  rtwoptions(9).default = '/dev/usb/lego0';
+  rtwoptions(9).tooltip = ['Device where Lego Infrared Tower is attached'];
+  rtwoptions(9).popupstrings = 'usb|/dev/usb/lego0|/dev/usb/lego1|/dev/ttyS0|/dev/ttyS1|/dev/ttyS2|/dev/ttyS3';
+
+  rtwoptions(10).prompt = 'Use Custom command';
+  rtwoptions(10).type = 'Checkbox';
+  rtwoptions(10).makevariable = 'USECUSTCOMM';
+  rtwoptions(10).tlcvariable = 'USECUSTCOMM';
+  rtwoptions(10).default = 'off';
+  rtwoptions(10).tooltip = ['use a custom command to download kernel to robot'];
+
+  rtwoptions(11).prompt = 'Custom command';
+  rtwoptions(11).type = 'Edit';
+  rtwoptions(11).makevariable = 'DOWNLCOMM';
+  rtwoptions(11).tlcvariable = 'DOWNLCOMM';
+  rtwoptions(11).default = 'firmdl';
+  rtwoptions(11).tooltip = ['command to download kernel to robot'];
+
+  rtwoptions(12).prompt = 'ErikaEducational base directory';
+  rtwoptions(12).type = 'Edit';
+  rtwoptions(12).makevariable = 'ERIKABASE';
+  rtwoptions(12).tlcvariable = 'ERIKABASE';
+  rtwoptions(12).default = '$ERIKABASE';
+  rtwoptions(12).tooltip = ['Base directory for files of ErikaEducational, leave default to read it from environment'];
+
+  rtwoptions(13).prompt = 'Real-Time Workshop library';
+  rtwoptions(13).type = 'Edit';
+  rtwoptions(13).makevariable = 'H8RTWLIBDIR';
+  rtwoptions(13).tlcvariable = 'H8RTWLIBDIR';
+  rtwoptions(13).default = '$ERIKABASE/toolbox';
+  rtwoptions(13).tooltip = ['Location of library librtw.a compiled for H8'];
+
+  %----------------------------------------%
+  % Configure RTW code generation settings %
+  %----------------------------------------%
+  
+  rtwgensettings.BuildDirSuffix = '_ErikaEducational_rtw';
+
+  END_RTW_OPTIONS
+%/ 

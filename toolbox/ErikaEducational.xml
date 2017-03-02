@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<targetfile>
+%% SYSTLC: ErikaEducational TMF: ErikaEducational.tmf MAKE: make_rtw 
+%%
+%% Abstract: Erika Educational target
+%%
+
+%%
+%% Project: E.R.I.K.A. - Embedded Real tIme Kernel Architecture
+%%
+%% http://erika.sssup.it
+%%
+%% Copyright (C) 2004 Riccardo Vestrini
+%%
+%% This program is distributed under the license contained into the
+%% license.txt file on the E.R.I.K.A. root directory.
+%%
+%% CVS: $Id: ErikaEducational.xml,v 1.2 2004/07/05 10:13:13 vestrini Exp $
+%%
+
+
+%selectfile NULL_FILE
+
+%assign TargetType = "RT"
+%assign Language   = "C"
+
+%include "erikamain.tlc"
+
+<rtwoptions>
+<category name="ErikaEducational code generation options">
+  <option type="Checkbox" prompt="Var/Proc mode">
+    <default>off</default>
+    <tlcvariable>VarProcTask</tlcvariable>
+    <tooltip>Model is partitioned in atomic subsystems which are mapped in task</tooltip>
+  </option>
+  <option type="Checkbox" prompt="Have task configuration file in path">
+    <default>off</default>
+    <tlcvariable>TaskCF</tlcvariable>
+    <tooltip>Exists a file named MODELNAME_tasks.tlc, used to specify task parameters and Proc mapping (only for Var/Proc mode)</tooltip>
+  </option>
+  <option type="Checkbox" prompt="Use Embedded Coder">
+    <default>off</default>
+    <tlcvariable>UseERT</tlcvariable>
+    <tooltip>Generate code using Embedded Coder target instead of Generic Real-Time target</tooltip>
+  </option>
+  <option type="Checkbox" prompt="Debug mode">
+    <default>off</default>
+    <tlcvariable>DebugLcd</tlcvariable>
+    <tooltip>Insert in code commands for writing on lcd display and compile with __DEBUG__ defined</tooltip>
+  </option>
+  <option type="Checkbox" prompt="Include NaN and Inf variables">
+    <default>off</default>
+    <makevariable>RTNONFINITE</makevariable>
+    <tooltip>Compile Real-Time workshop rt_nonfinite.c, default is disabled since it greatly enlarge output and causes errors</tooltip>
+  </option>
+</category>
+
+<category name="ErikaEducational configuration">
+  <option type="Checkbox" prompt="Download to robot">
+    <default>off</default>
+    <tlcvariable>DownloadToRobot</tlcvariable>
+    <makevariable>DOWNLOADTOROBOT</makevariable>
+    <tooltip>Download application to robot using firmdl program</tooltip>
+  </option>
+  <option type="Popup" prompt="Lego tower device">
+    <default>/dev/usb/lego0</default>
+    <popupstrings>usb|/dev/usb/lego0|/dev/usb/lego1|/dev/ttyS0|/dev/ttyS1|/dev/ttyS2|/dev/ttyS3</popupstrings>
+    <makevariable>LEGOTOWERDEVICE</makevariable>
+    <tooltip>Device where Lego Infrared Tower is attached</tooltip>
+  </option>
+  <option type="Checkbox" prompt="Use Custom command">
+    <default>off</default>
+    <makevariable>USECUSTCOMM</makevariable>
+    <tooltip>use a custom command to download kernel to robot</tooltip>
+  </option>
+  <option type="Edit" prompt="Custom command">
+    <default>firmdl</default>
+    <makevariable>DOWNLCOMM</makevariable>
+    <tooltip>command to download kernel to robot</tooltip>
+  </option>
+  <option type="Edit" prompt="ErikaEducational base directory">
+    <default>$ERIKABASE</default>
+      <makevariable>ERIKABASE</makevariable>
+    <tooltip>Base directory for files of ErikaEducational, leave default to read it from environment</tooltip>
+    </option>
+    <option type="Edit" prompt="Real-Time Workshop library">
+    <default>$ERIKABASE/toolbox</default>
+    <makevariable>H8RTWLIBDIR</makevariable>
+    <tooltip>Location of library librtw.a compiled for H8</tooltip>
+  </option>
+  </category>
+
+
+
+
+  <option type="Checkbox" prompt="">
+    <default></default>
+    <tlcvariable></tlcvariable>
+   <popupstrings></popupstrings>
+   <makevariable></makevariable>
+    <tooltip></tooltip>
+  </option>
+
+
+</rtwoptions>
+</targetfile>

@@ -1,0 +1,6 @@
+namedobject.o: namedobject.cpp namedobject.hpp baseexc.hpp cfg.hpp \
+  typed.hpp check.hpp
+provaActor.o: provaActor.cpp namedobject.hpp baseexc.hpp cfg.hpp \
+  typed.hpp actor.hpp port.hpp check.hpp channel.hpp list.hpp \
+  receiver.hpp channel.cpp port.cpp fiforeceiver.hpp fiforeceiver.cpp \
+  actorsource.hpp actoraccumulator.hpp actoroutput.hpp

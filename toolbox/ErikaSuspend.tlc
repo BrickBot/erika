@@ -1,0 +1,44 @@
+/%
+ % Project: E.R.I.K.A. - Embedded Real tIme Kernel Architecture
+ %
+ % http://erika.sssup.it
+ %
+ % Copyright (C) 2004 Riccardo Vestrini
+ %
+ % This program is distributed under the license contained into the
+ % license.txt file on the E.R.I.K.A. root directory.
+ %
+ % CVS: $Id: ErikaSuspend.tlc,v 1.1 2004/06/01 16:42:41 vestrini Exp $
+ %/
+
+%implements  ErikaSuspend "C"
+
+
+%function BlockTypeSetup(block,system) void
+  %if !EXISTS(::MainIncludeAdded)
+    %<LibAddToCommonIncludes("code.h")>
+    %assign ::MainIncludeAdded = 1
+  %endif
+
+  %openfile buffer
+  boolean_T suspended_state = 0;
+  %closefile buffer
+  %<LibCacheGlobalPrmData(buffer)>
+
+  %assign ::SuspendedStateActive = 1
+
+%endfunction
+
+%function Update(block, system) Output
+
+  /* Suspend block: %<Name> */
+  if (%<LibBlockInputSignal(0, "", "", 0)> && !suspended_state) {
+    StopOS();
+    suspended_state = 1;
+    SYSCR = 0x80;
+    __asm__ (".align 1");
+    __asm__ ("andc	#0x7F, ccr");	
+    __asm__ ("sleep"); 
+  }
+
+%endfunction

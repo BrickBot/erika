@@ -1,0 +1,112 @@
+/%
+ % Project: E.R.I.K.A. - Embedded Real tIme Kernel Architecture
+ %
+ % http://erika.sssup.it
+ %
+ % Copyright (C) 2004 Riccardo Vestrini
+ %
+ % This program is distributed under the license contained into the
+ % license.txt file on the E.R.I.K.A. root directory.
+ %
+ %/
+
+%with CompiledModel
+  %createrecord ProcOutputs { Num 0 } 
+  %foreach sysIdx = NumSystems
+    %with System[sysIdx]
+      %if Name == "<Root>"
+        %break
+      %endif
+      %foreach blkIdx = NumTotalBlocks
+        %if Block[blkIdx].Type=="Outport"
+          %foreach sigIdx = SIZE(Block[blkIdx].DataInputPort.SignalSrc)[1]
+            %assign ProcOutputs = ProcOutputs + ...
+            Input { SignalSrc Block[blkIdx].DataInputPort.SignalSrc[sigIdx]; ...
+                    Name "%<LibCodeVarName(Name)>_%<SYSNAME(Block[blkIdx].Name)[1]>"; Seen 0; ...
+                    SystemIdentifier Identifier }
+            %assign ProcOutputs.Num = ProcOutputs.Num + 1
+          %endforeach
+        %endif
+      %endforeach
+    %endwith
+  %endforeach
+
+
+  %openfile sched = "%<Name>_subsystems.xml"
+  <SYSTEM Name="%<Name>" version="%<ModelVersion>" generatedon="%<GeneratedOn>">
+    <FUNCTIONAL>
+      %foreach sysIdx = NumSystems
+        %if System[sysIdx].Name == "<Root>" 
+	  %break
+        %endif
+      <PROC Name="%<LibCodeBlockName(System[sysIdx].Name)>">
+ 	%with System[sysIdx]
+          %if EXISTS(InitializeFcn)
+        <METHOD Name="%<InitializeFcn>" Type="Initialize"/>
+          %endif
+          %if EXISTS(OutputFcn)
+        <METHOD Name="%<OutputFcn>" Type="Output"/>
+          %endif
+          %if EXISTS(UpdateFcn)
+        <METHOD Name="%<UpdateFcn>" Type="Update"/>
+          %endif
+          %if EXISTS(DerivativeFcn)
+        <METHOD Name="%<DerivativeFcn>" Type="Derivative"/>
+          %endif
+          %if EXISTS(EnableFcn)
+        <METHOD Name="%<EnableFcn>" Type="Enable"/>
+          %endif
+          %if EXISTS(DisableFcn)
+        <METHOD Name="%<DisableFcn>" Type="Disable"/>
+          %endif
+          %if EXISTS(ZeroCrossFcn)
+        <METHOD Name="%<ZeroCrossFcn>" Type="ZeroCross"/>
+          %endif
+          %if EXISTS(OutputUpdateFcn)
+        <METHOD Name="%<OutputUpdateFcn>" Type="OutputUpdate"/>
+          %endif
+	  %foreach blkIdx = ProcOutputs.Num
+            %assign ProcOutputs.Input[blkIdx].Seen = 0
+          %endforeach
+          %foreach blkIdx = NumTotalBlocks
+            %if Block[blkIdx].Type=="Outport"
+        <METHODREF Name="write_%<LibCodeVarName(Name)>_%<SYSNAME(Block[blkIdx].Name)[1]>"/>
+            %else
+              %foreach dtiIdx = Block[blkIdx].NumDataInputPorts
+                %foreach sigIdx = ProcOutputs.Num
+                  %foreach sigIdx2 = SIZE(Block[blkIdx].DataInputPort[dtiIdx].SignalSrc)[1]
+                    %if (ProcOutputs.Input[sigIdx].SignalSrc == ...
+                         Block[blkIdx].DataInputPort[dtiIdx].SignalSrc[sigIdx2]) ...
+                        && (ProcOutputs.Input[sigIdx].Seen == 0) ...
+                        && (ProcOutputs.Input[sigIdx].SystemIdentifier != Identifier)
+                      %assign ProcOutputs.Input[sigIdx].Seen = 1
+        <METHODREF Name="read_%<ProcOutputs.Input[sigIdx].Name>"/>
+                    %endif
+                  %endforeach
+                %endforeach
+              %endforeach
+            %endif
+          %endforeach
+      </PROC>
+        %foreach blkIdx = NumTotalBlocks
+          %assign thisname = LibCodeVarName(Name)
+          %with Block[blkIdx]
+            %if Type=="Outport"
+              %if EXISTS(DataTypeIdx)
+      <VAR Name="%<thisname>_%<SYSNAME(Name)[1]>" Type="%<LibGetDataTypeNameFromId(DataTypeIdx)>">
+              %else
+      <VAR Name="%<thisname>_%<SYSNAME(Name)[1]>" Type="%<LibGetDataTypeNameFromId(0)>">
+              %endif
+        <METHOD Name="read_%<thisname>_%<SYSNAME(Name)[1]>" Type="Read"/>
+        <METHOD Name="write_%<thisname>_%<SYSNAME(Name)[1]>" Type="Write"/>
+      </VAR>
+            %endif
+          %endwith
+        %endforeach
+        %endwith
+      %endforeach
+    </FUNCTIONAL>
+  </SYSTEM>
+  %closefile sched
+%endwith  
+

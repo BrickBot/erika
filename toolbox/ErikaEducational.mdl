@@ -1,0 +1,371 @@
+Library {
+  Name			  "ErikaEducational"
+  Version		  5.0
+  SaveDefaultBlockParams  on
+  LibraryLinkDisplay	  "none"
+  ShowLoopsOnError	  on
+  IgnoreBidirectionalLines off
+  CovSaveName		  "covdata"
+  CovMetricSettings	  "dw"
+  CovNameIncrementing	  off
+  CovHtmlReporting	  on
+  covSaveCumulativeToWorkspaceVar on
+  CovSaveSingleToWorkspaceVar on
+  CovCumulativeReport	  off
+  BlockNameDataTip	  off
+  BlockParametersDataTip  off
+  BlockDescriptionStringDataTip	off
+  ToolBar		  on
+  StatusBar		  on
+  BrowserShowLibraryLinks off
+  BrowserLookUnderMasks	  off
+  Created		  "Fri Apr 30 14:50:41 2004"
+  Creator		  "riccardo"
+  UpdateHistory		  "UpdateHistoryNever"
+  ModifiedByFormat	  "%<Auto>"
+  LastModifiedBy	  "riccardo"
+  ModifiedDateFormat	  "%<Auto>"
+  LastModifiedDate	  "Mon Jul  5 12:01:36 2004"
+  ModelVersionFormat	  "1.%<AutoIncrement:37>"
+  ConfigurationManager	  "None"
+  SimParamPage		  "Solver"
+  LinearizationMsg	  "none"
+  Profile		  off
+  ParamWorkspaceSource	  "MATLABWorkspace"
+  ExtModeMexFile	  "ext_comm"
+  ExtModeBatchMode	  off
+  ExtModeTrigType	  "manual"
+  ExtModeTrigMode	  "normal"
+  ExtModeTrigPort	  "1"
+  ExtModeTrigElement	  "any"
+  ExtModeTrigDuration	  1000
+  ExtModeTrigHoldOff	  0
+  ExtModeTrigDelay	  0
+  ExtModeTrigDirection	  "rising"
+  ExtModeTrigLevel	  0
+  ExtModeArchiveMode	  "off"
+  ExtModeAutoIncOneShot	  off
+  ExtModeIncDirWhenArm	  off
+  ExtModeAddSuffixToVar	  off
+  ExtModeWriteAllDataToWs off
+  ExtModeArmWhenConnect	  on
+  ExtModeSkipDownloadWhenConnect off
+  ExtModeLogAll		  on
+  ExtModeAutoUpdateStatusClock off
+  SimulationMode	  "normal"
+  ConsistencyChecking	  "none"
+  ArrayBoundsChecking	  "none"
+  AlgebraicLoopMsg	  "warning"
+  BlockPriorityViolationMsg "warning"
+  MinStepSizeMsg	  "warning"
+  InheritedTsInSrcMsg	  "warning"
+  DiscreteInheritContinuousMsg "warning"
+  MultiTaskRateTransMsg	  "error"
+  SingleTaskRateTransMsg  "none"
+  CheckForMatrixSingularity "none"
+  IntegerOverflowMsg	  "warning"
+  Int32ToFloatConvMsg	  "warning"
+  ParameterDowncastMsg	  "error"
+  ParameterOverflowMsg	  "error"
+  ParameterPrecisionLossMsg "warning"
+  UnderSpecifiedDataTypeMsg "none"
+  UnnecessaryDatatypeConvMsg "none"
+  VectorMatrixConversionMsg "none"
+  InvalidFcnCallConnMsg	  "error"
+  SignalLabelMismatchMsg  "none"
+  UnconnectedInputMsg	  "warning"
+  UnconnectedOutputMsg	  "warning"
+  UnconnectedLineMsg	  "warning"
+  SfunCompatibilityCheckMsg "none"
+  ProdHWDeviceType	  "Microprocessor"
+  ProdHWWordLengths	  "8,16,32,32"
+  RTWMakeCommand	  "make_rtw"
+  RTWGenerateCodeOnly	  off
+  RTWRetainRTWFile	  off
+  TLCProfiler		  off
+  TLCDebug		  off
+  TLCCoverage		  off
+  TLCAssertion		  off
+  BlockDefaults {
+    Orientation		    "right"
+    ForegroundColor	    "black"
+    BackgroundColor	    "white"
+    DropShadow		    off
+    NamePlacement	    "normal"
+    FontName		    "Helvetica"
+    FontSize		    10
+    FontWeight		    "normal"
+    FontAngle		    "normal"
+    ShowName		    on
+  }
+  BlockParameterDefaults {
+    Block {
+      BlockType		      "S-Function"
+      FunctionName	      "system"
+      PortCounts	      "[]"
+      SFunctionModules	      "''"
+    }
+  }
+  AnnotationDefaults {
+    HorizontalAlignment	    "center"
+    VerticalAlignment	    "middle"
+    ForegroundColor	    "black"
+    BackgroundColor	    "white"
+    DropShadow		    off
+    FontName		    "Helvetica"
+    FontSize		    10
+    FontWeight		    "normal"
+    FontAngle		    "normal"
+  }
+  LineDefaults {
+    FontName		    "Helvetica"
+    FontSize		    9
+    FontWeight		    "normal"
+    FontAngle		    "normal"
+  }
+  System {
+    Name		    "ErikaEducational"
+    Location		    [45, 171, 898, 626]
+    Open		    on
+    ModelBrowserVisibility  off
+    ModelBrowserWidth	    200
+    ScreenColor		    "white"
+    PaperOrientation	    "landscape"
+    PaperPositionMode	    "auto"
+    PaperType		    "usletter"
+    PaperUnits		    "inches"
+    ZoomFactor		    "100"
+    ReportName		    "simulink-default.rpt"
+    Block {
+      BlockType		      "S-Function"
+      Name		      "Lcd Display"
+      Ports		      [1, 1]
+      Position		      [440, 60, 540, 110]
+      FunctionName	      "ErikaLcdDisplay"
+      MaskType		      "lcd"
+      MaskDescription	      "zio\npipn"
+      MaskHelp		      "file:///zio.html"
+      MaskDisplay	      "image(imread('ErikaLcdDisplay.tif'))\nport_labe"
+"l('input',1,'number');\n"
+      MaskSelfModifiable      on
+      MaskIconFrame	      on
+      MaskIconOpaque	      on
+      MaskIconRotate	      "port"
+      MaskIconUnits	      "autoscale"
+    }
+    Block {
+      BlockType		      "S-Function"
+      Name		      "Light Sensors"
+      Ports		      [3, 3]
+      Position		      [240, 197, 370, 313]
+      FunctionName	      "ErikaLightSensors"
+      Parameters	      "ports_used conversion_mode sensitivity"
+      MaskType		      "button"
+      MaskDescription	      "zio\npipn"
+      MaskHelp		      "file:///zio.html"
+      MaskPromptString	      "Ports used:|Fast mode:|Sensitivity:"
+      MaskStyleString	      "popup(1|2|3|1 and 2|1 and 3|2 and 3|1 2 and 3),"
+"popup(normal|fast),popup(min|1|2|3|4|5|6|7|8|max)"
+      MaskTunableValueString  "off,off,off"
+      MaskCallbackString      "||"
+      MaskEnableString	      "on,on,on"
+      MaskVisibilityString    "on,on,on"
+      MaskToolTipString	      "on,on,on"
+      MaskVarAliasString      ",,"
+      MaskVariables	      "ports_used=@1;conversion_mode=@2;sensitivity=@3"
+";"
+      MaskInitialization      "ErikaLightSensors_initialize;"
+      MaskDisplay	      "image(imread('ErikaLightSensors.tif'));\nport_l"
+"abel('input',1,'value 1');\nport_label('output',1,'value 1');\nport_label('in"
+"put',2,'value 2');\nport_label('output',2,'value 2');\nport_label('input',3,'"
+"value 3');\nport_label('output',3,'value 3');\n"
+      MaskSelfModifiable      on
+      MaskIconFrame	      on
+      MaskIconOpaque	      on
+      MaskIconRotate	      "port"
+      MaskIconUnits	      "autoscale"
+      MaskValueString	      "1 2 and 3|normal|max"
+    }
+    Block {
+      BlockType		      "S-Function"
+      Name		      "On/Off button"
+      Ports		      [1, 1]
+      Position		      [45, 294, 145, 346]
+      FunctionName	      "ErikaOnOffButton"
+      Parameters	      "output_mode use_interrupt"
+      MaskType		      "button"
+      MaskDescription	      "zio\npipn"
+      MaskHelp		      "file:///zio.html"
+      MaskPromptString	      "Output Mode:|Use interrupt:"
+      MaskStyleString	      "popup(edge|trigger|pass),popup(yes|no)"
+      MaskTunableValueString  "off,off"
+      MaskCallbackString      "|"
+      MaskEnableString	      "on,on"
+      MaskVisibilityString    "on,on"
+      MaskToolTipString	      "on,on"
+      MaskVarAliasString      ","
+      MaskVariables	      "output_mode=@1;use_interrupt=@2;"
+      MaskInitialization      "ErikaOnOffButton_initialize;"
+      MaskDisplay	      "image(imread('ErikaOnOffButton.tif'));\nport_la"
+"bel('output',1,'edge');\nport_label('input',1,'int')\n"
+      MaskSelfModifiable      on
+      MaskIconFrame	      on
+      MaskIconOpaque	      on
+      MaskIconRotate	      "port"
+      MaskIconUnits	      "autoscale"
+      MaskValueString	      "edge|yes"
+    }
+    Block {
+      BlockType		      "S-Function"
+      Name		      "PWM Motors"
+      Ports		      [4, 2]
+      Position		      [235, 57, 370, 173]
+      FunctionName	      "ErikaMotors"
+      Parameters	      "ports_used fast_implementation brake_when_off"
+      MaskType		      "button"
+      MaskDescription	      "zio\npipn"
+      MaskHelp		      "file:///zio.html"
+      MaskPromptString	      "Ports used:|Fast implementation:|Brake when off"
+":"
+      MaskStyleString	      "popup(A|C|A and C),popup(yes|no),popup(yes|no)"
+      MaskTunableValueString  "off,off,off"
+      MaskCallbackString      "||"
+      MaskEnableString	      "on,on,on"
+      MaskVisibilityString    "on,on,on"
+      MaskToolTipString	      "on,on,on"
+      MaskVarAliasString      ",,"
+      MaskVariables	      "ports_used=@1;fast_implementation=@2;brake_when"
+"_off=@3;"
+      MaskInitialization      "ErikaMotors_initialize;"
+      MaskDisplay	      "image(imread('ErikaMotors.tif'));\nport_label('"
+"input',1,'power A');\nport_label('output',1,'speed A');\nport_label('input',2"
+",'direction A');\nport_label('input',3,'power C');\nport_label('input',4,'dir"
+"ection C');\nport_label('output',2,'speed C');\n"
+      MaskSelfModifiable      on
+      MaskIconFrame	      on
+      MaskIconOpaque	      on
+      MaskIconRotate	      "port"
+      MaskIconUnits	      "autoscale"
+      MaskValueString	      "A and C|no|no"
+    }
+    Block {
+      BlockType		      "S-Function"
+      Name		      "Prgm button"
+      Ports		      [1, 1]
+      Position		      [45, 62, 145, 118]
+      FunctionName	      "ErikaPrgmButton"
+      Parameters	      "output_mode"
+      MaskType		      "button"
+      MaskDescription	      "zio\npipn"
+      MaskHelp		      "file:///zio.html"
+      MaskPromptString	      "Output Mode:"
+      MaskStyleString	      "popup(edge|trigger|pass)"
+      MaskTunableValueString  "off"
+      MaskCallbackString      ";"
+      MaskEnableString	      "on"
+      MaskVisibilityString    "on"
+      MaskToolTipString	      "on"
+      MaskVariables	      "output_mode=@1;"
+      MaskInitialization      "ErikaPrgmButton_initialize;"
+      MaskDisplay	      "image(imread('ErikaPrgmButton.tif'));\nport_lab"
+"el('output',1,'edge');\n"
+      MaskSelfModifiable      on
+      MaskIconFrame	      on
+      MaskIconOpaque	      on
+      MaskIconRotate	      "port"
+      MaskIconUnits	      "autoscale"
+      MaskValueString	      "edge"
+    }
+    Block {
+      BlockType		      "S-Function"
+      Name		      "Run button"
+      Ports		      [1, 1]
+      Position		      [45, 217, 145, 273]
+      FunctionName	      "ErikaRunButton"
+      Parameters	      "output_mode use_interrupt"
+      MaskType		      "button"
+      MaskDescription	      "zio\npipn"
+      MaskHelp		      "file:///zio.html"
+      MaskPromptString	      "Output Mode:|Use interrupt:"
+      MaskStyleString	      "popup(edge|trigger|pass),popup(yes|no)"
+      MaskTunableValueString  "off,off"
+      MaskCallbackString      "|"
+      MaskEnableString	      "on,on"
+      MaskVisibilityString    "on,on"
+      MaskToolTipString	      "on,on"
+      MaskVarAliasString      ","
+      MaskVariables	      "output_mode=@1;use_interrupt=@2;"
+      MaskInitialization      "ErikaRunButton_initialize;"
+      MaskDisplay	      "image(imread('ErikaRunButton.tif'));\nport_labe"
+"l('output',1,'edge');\nport_label('input',1,'int')\n"
+      MaskSelfModifiable      on
+      MaskIconFrame	      on
+      MaskIconOpaque	      on
+      MaskIconRotate	      "port"
+      MaskIconUnits	      "autoscale"
+      MaskValueString	      "edge|yes"
+    }
+    Block {
+      BlockType		      "S-Function"
+      Name		      "Suspend"
+      Ports		      [2]
+      Position		      [440, 151, 540, 204]
+      FunctionName	      "ErikaSuspend"
+      MaskType		      "exec"
+      MaskDescription	      "zio\npipn"
+      MaskHelp		      "file:///zio.html"
+      MaskDisplay	      "image(imread('ErikaSuspend.tif'));\nport_label("
+"'input',1,'suspend');\nport_label('input',2,'resume');\n"
+      MaskSelfModifiable      on
+      MaskIconFrame	      on
+      MaskIconOpaque	      on
+      MaskIconRotate	      "port"
+      MaskIconUnits	      "autoscale"
+    }
+    Block {
+      BlockType		      "S-Function"
+      Name		      "Terminate"
+      Ports		      [1, 1]
+      Position		      [445, 238, 545, 292]
+      FunctionName	      "ErikaTerminate"
+      MaskType		      "exec"
+      MaskDescription	      "zio\npipn"
+      MaskHelp		      "file:///zio.html"
+      MaskDisplay	      "image(imread('ErikaTerminate.tif'))\nport_label"
+"('input',1,'stop');\n"
+      MaskSelfModifiable      on
+      MaskIconFrame	      on
+      MaskIconOpaque	      on
+      MaskIconRotate	      "port"
+      MaskIconUnits	      "autoscale"
+    }
+    Block {
+      BlockType		      "S-Function"
+      Name		      "View button"
+      Ports		      [1, 1]
+      Position		      [45, 143, 145, 197]
+      FunctionName	      "ErikaViewButton"
+      Parameters	      "output_mode"
+      MaskType		      "button"
+      MaskDescription	      "zio\npipn"
+      MaskHelp		      "file:///zio.html"
+      MaskPromptString	      "Output Mode:"
+      MaskStyleString	      "popup(edge|trigger|pass)"
+      MaskTunableValueString  "off"
+      MaskCallbackString      ";"
+      MaskEnableString	      "on"
+      MaskVisibilityString    "on"
+      MaskToolTipString	      "on"
+      MaskVariables	      "output_mode=@1;"
+      MaskInitialization      "ErikaViewButton_initialize;"
+      MaskDisplay	      "image(imread('ErikaViewButton.tif'));\nport_lab"
+"el('output',1,'edge');\n"
+      MaskSelfModifiable      on
+      MaskIconFrame	      on
+      MaskIconOpaque	      on
+      MaskIconRotate	      "port"
+      MaskIconUnits	      "autoscale"
+      MaskValueString	      "edge"
+    }
+  }
+}

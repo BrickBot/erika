@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+
+<optiondepend>
+  <group>
+    <option>IR_SUPPORT</option>
+    <option>IR_RX_SUPPORT</option>
+    <code>serial.c</code>
+  </group>
+
+  <single>
+    <option>FP</option>
+    <code>mutex.c</code>
+    <depend>FP_NO_MUTEX</depend>
+  </single>
+
+  <single>
+    <option>FP_NO_MUTEX</option>
+    <code>gettime.c idle.c irq_act.c irq_sc.c panic.c reboot.c rq_exchg.c rq_inser.c schedule.c thact.c thendin.c thmkrdy.c</code>
+  </single>
+
+  <single>
+    <option>CPP</option>
+    <libdir>$(H8BASE)/lib/gcc-lib/h8300-hitachi-hms/2.95.2</libdir>
+    <lib>gcc</lib>
+  </single>
+
+  <single>
+    <option>LIBC</option>
+    <incdir>$(ERIKABASE)/include/libc</incdir>
+    <code>abort.c free.c malloc.c memset.c strcmp.c</code>
+    <dir>$(ERIKABASE)/src/libc/string $(ERIKABASE)/src/libc/stdlib</dir>
+  </single>
+
+  <single>
+    <option>CABS</option>
+    <code>cabs.c</code>
+    <dir>$(ERIKABASE)/src/cabs</dir>
+  </single>
+
+  <single>
+    <option>SEM</option>
+    <conflict>MONO</conflict>
+    <code>swait.c spost.c sirqpost.c sgetvalue.c strywait.c</code>
+    <dir>$(ERIKABASE)/src/sem</dir>
+  </single>
+
+  <single>
+    <option>ALARMS</option>
+    <code>alcancel.c altick.c alget.c alsetabs.c alsetrel.c</code>
+    <dir>$(ERIKABASE)/src/alarms</dir>
+  </single>
+
+  <andgroup>
+    <option>IR_SUPPORT</option>
+    <option>ERIKA_PWM_USED</option>
+    <conflict>PLAY_BUFFER_SUPPORT</conflict>
+    <conflict>PLAY_NOTE_SUPPORT</conflict>
+  </andgroup>
+
+  <andgroup>
+    <option>ERIKA_PWM_USED</option>
+    <nooption>IR_SUPPORT</nooption>
+    <depends>T81_SUPPORT</depends>
+  </andgroup>
+
+  <single>
+  <option>VP_USED</option>
+  <depend>MOTOR_VP_SUPPORT</depend>
+  </single>
+
+  <group>
+  <option>PLAY_NOTE_SUPPORT</option>
+  <option>PLAY_BUFFER_SUPPORT</option>
+  <depend>T80_SUPPORT</depend>
+  </group>
+
+  <group>
+  <option>PLAY_NOTE_SUPPORT</option>
+  <option>PLAY_BUFFER_SUPPORT</option>
+  <option>MOTOR_VP_SUPPORT</option>
+  <option>TIMER_B_USER_FUNCTION_USED</option>
+  <depend>TIMER_B_SUPPORT</depend>
+  </group>
+
+  <single>
+  <option>TIMER_A_USER_FUNCTION_USED</option>
+  <depend>TIMER_A_SUPPORT</depend>
+  </single>
+
+  <single>
+  <option>SF_HIGH_SPEED_TRIG_USED</option>
+  <depend>SF_TRIG_USED</depend>
+  </single>
+
+  <single>
+  <option>DF_HIGH_SPEED_TRIG_USED</option>
+  <depend>DF_TRIG_USED</depend>
+  </single>
+  
+  <single>
+  <option>SF_TRIG_USED</option>
+  <depend>SIGNED_FIXED_USED</depend>
+  </single>
+
+  <single>
+  <option>DF_TRIG_USED</option>
+  <depend>DOUBLE_FIXED_USED</depend>
+  </single>
+
+  <group>
+  <option>SIGNED_FIXED_USED</option>
+  <option>DOUBLE_FIXED_USED</option>
+  <depend>FMATH_SUPPORT</depend>
+  </group>
+
+  <single>
+  <option>FMATH_SUPPORT</option>
+  <code>fmath.s</code>
+  </single>
+
+</optiondepend>

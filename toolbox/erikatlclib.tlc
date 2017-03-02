@@ -1,0 +1,46 @@
+/%
+ % Project: E.R.I.K.A. - Embedded Real tIme Kernel Architecture
+ %
+ % http://erika.sssup.it
+ %
+ % Copyright (C) 2004 Riccardo Vestrini
+ %
+ % This program is distributed under the license contained into the
+ % license.txt file on the E.R.I.K.A. root directory.
+ %
+ %/
+%function LibLcdDebug(name) Output
+  %if DebugLcd == 1
+  ERIKA_lcd_write_num(%<name>);
+  %endif
+%endfunction
+
+%function LibCodeBlockName(name) void
+  %assign sysName = SYSNAME(name)
+  %if sysName[0] == ""
+    %return name
+  %elseif sysName[0] == "Root"
+%%    %return sysName[1]
+    %return "function"
+  %else
+    %assign idNum = IDNUM(sysName[0])
+    %assign subsystemNum = idNum[1] - 1
+    %return LibCodeBlockName(Subsystem[subsystemNum].Name) + "_" + sysName[1]
+  %endif
+%endfunction 
+
+
+%function LibCodeVarName(name) void
+  %assign sysName = SYSNAME(name)
+  %if sysName[0] == ""
+    %return name
+  %elseif sysName[0] == "Root"
+%%    %return sysName[1]
+    %return "var"
+  %else
+    %assign idNum = IDNUM(sysName[0])
+    %assign subsystemNum = idNum[1] - 1
+    %return LibCodeVarName(Subsystem[subsystemNum].Name) + "_" + sysName[1]
+  %endif
+%endfunction 
+

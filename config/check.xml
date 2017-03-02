@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<optiondepend>
+  <single>
+    <option>MULTI</option>
+    <depend>IRQ_STACK_NEEDED</depend>
+    <conflict>MONO</conflict>
+  </single>
+  <single>
+    <option>IRQ_STACK_NEEDED</option>
+    <depend>MULTI</depend>
+  </single>
+  <single>
+    <option>IR_SUPPORT</option>
+    <conflict>IR_RX_SUPPORT</conflict>
+  </single>
+</optiondepend>

@@ -1,0 +1,510 @@
+%%
+%% Project: E.R.I.K.A. - Embedded Real tIme Kernel Architecture
+%%
+%% http://erika.sssup.it
+%%
+%% Copyright (C) 2004 Riccardo Vestrini
+%%
+%% This program is distributed under the license contained into the
+%% license.txt file on the E.R.I.K.A. root directory.
+%%
+%% CVS: $Id: erikamain.tlc,v 1.1 2004/06/01 16:42:44 vestrini Exp $
+%%
+
+%if (!EXISTS(CompiledModel.FixedStepOpts)) == 1
+  %error "Solver mode must be fixed step"
+  %exit
+%endif
+
+%createrecord ErikaEducational { NumberOfTasks 0 }
+%if VarProcTask == 1
+  %include "varproctask.tlc"
+%else
+  %with CompiledModel
+    %if FixedStepOpts.SolverMode == "SingleTasking"
+      %assign BaseRate = CAST("Number", FixedStepOpts.FixedStep*1000)
+      %assign ErikaEducational.NumberOfTasks = 1
+      %addtorecord ErikaEducational Task { Name "task_%<Name>"; ...
+	PriorityReady 1; PriorityDispatch 1; ...
+	NumberOfProcs 1; Rate %<BaseRate> }
+      %addtorecord ErikaEducational.Task ...
+	Proc { Name "%<Name>_step_0" }
+    %else %% MultiTasking
+      %assign ErikaEducational.NumberOfTasks = NumSampleTimes
+      %foreach Index = ErikaEducational.NumberOfTasks
+	%assign rate = CAST("Number", SampleTime[Index].PeriodAndOffset[0] * 1000)
+	%addtorecord ErikaEducational Task { Name "task_%<Name>_%<Index>"; ...
+	  PriorityReady %<1<<Index>; PriorityDispatch %<1<<Index>; ...
+	  NumberOfProcs 1; Rate %<rate> }
+	%addtorecord ErikaEducational.Task[Index] ...
+	  Proc { Name "%<Name>_step_%<Index>" }
+      %endforeach
+    %endif
+  %endwith
+%endif
+
+%% le righe seguenti abilitano Embedded Coder se c'è
+%if UseERT==1
+  %assign CodeFormat = "Embedded-C"
+  %assign AutoBuildProcedure = 0
+  %assign GenerateSampleERTMain = 0
+  %include "mathlib.tlc"
+  %<LibRegisterISOCMathFcnPrototypes()>
+%else
+  %assign GenRTModel = 1
+%endif 
+
+
+
+
+
+%include "codegenentry.tlc"
+
+%if VarProcTask == 1
+  %include "subsystemsxml.tlc"
+%endif
+
+
+%% Main
+%<LibWriteToStandardOutput("### Writing main include file code.h")>
+%openfile mainh = "code.h"
+/* Main include file for  model %<CompiledModel.Name> */
+
+#include "erika.h"
+#include "alarms/alarms.h" 
+#include "erikacfg.h"
+
+/* OSEK interface */
+#define DisableAllInterrupts      ERIKA_interrupt_off
+#define EnableAllInterrupts       ERIKA_interrupt_on
+#define DeclareTask(x)
+#define TASK(x)                   void Func##x (void)
+#define ActivateTask(x)           ERIKA_thread_activate(x)
+#define ISR(name)                 ERIKA_declare_stub(name); void (name)(void)
+#define DeclareAlarm(x)
+#define ALARMCALLBACK(x)          void (x)(void)
+#define SetRelAlarm               ERIKA_alarm_setrel
+#define CancelAlarm               ERIKA_alarm_cancel
+__INLINE__ void IRQActivateTask(ERIKA_TID x) /* prefisso IRQ aggiunto */
+{
+  ERIKA_IRQ_make_ready(x, 1);
+}
+__INLINE__ void TerminateTask(void) {}
+
+/* alarms for periodic task activation */
+%with ErikaEducational
+  %foreach Index = %<NumberOfTasks>
+    DeclareAlarm(alarm_%<Task[Index].Name>);
+  %endforeach
+%endwith
+
+/* RTW-generated function */
+%if UseERT == 1
+  void %<Name>_initialize(int_T);
+  void %<Name>_terminate(void);
+%else
+  void MdlInitializeSizes(void);
+  void MdlInitializeSampleTimes(void);
+  void MdlStart(void);
+  void MdlOutputs(int_T);
+  void MdlUpdate(int_T);
+  void MdlTerminate(void);
+%endif
+
+/* start and stop for the model */
+void StartOS(void);
+void StopOS(void);
+
+/* tasks */
+%with ErikaEducational
+  %foreach Index = %<NumberOfTasks>
+    %foreach Index2 = %<Task[Index].NumberOfProcs>
+      void %<Task[Index].Proc[Index2].Name>();
+    %endforeach
+  %endforeach
+%endwith
+
+%closefile mainh
+
+%% Main
+%<LibWriteToStandardOutput("### Writing main source file code.c")>
+%openfile main = "code.c"
+/* Main file for model %<CompiledModel.Name> */
+
+#include "code.h"
+
+%with CompiledModel
+
+  /* main() start point for model */
+  void ERIKA_dummy(void)
+  {
+    ERIKA_init();     
+    StartOS();
+    ERIKA_hal_enableIRQ();
+    for (;;) {
+      ERIKA_sys_idle();
+    }
+  }
+  
+  %with ErikaEducational
+    %foreach Index = %<NumberOfTasks>
+      %if DebugLcd == 1
+	/* Debug information:  count task %<Index> number of executions */
+	int %<Task[Index].Name>_n = %<1000*Index>;
+      %endif
+
+      // task %<Task[Index].Name>
+      TASK(%<Task[Index].Name>)
+      {
+	%if DebugLcd == 1
+	  ERIKA_lcd_write_num(%<Task[Index].Name>_n++); /* Debug */
+	%endif
+	%foreach Index2 = %<Task[Index].NumberOfProcs>
+	  %<Task[Index].Proc[Index2].Name>();
+	%endforeach
+	TerminateTask();
+      } 
+    %endforeach
+  %endwith
+  
+  %if (UseERT==0) && (VarProcTask==0)
+    %with ErikaEducational
+      %foreach Index = NumberOfTasks
+	void %<Name>_step_%<Index>(void)
+	{
+	  MdlOutputs(%<Index>);
+	  MdlUpdate(%<Index>);
+	}
+      %endforeach
+    %endwith
+  %endif
+  
+  void ERIKA_timerB_user_function(void)
+  {
+    ERIKA_counter_tick(counter0);
+  }
+
+  void StartOS(void)
+  {
+    /* RTW-generated code initialization */
+    %if UseERT == 1
+      %<Name>_initialize(1);
+    %else
+      MdlInitializeSizes();
+      MdlInitializeSampleTimes();
+      MdlStart();
+    %endif
+    %if DebugLcd == 1
+      /* Debug informations activated */
+      ERIKA_lcd_write_num(8888);
+    %endif
+    
+    /* Task activation */
+    %with ErikaEducational
+      %foreach Index = %<NumberOfTasks>
+	SetRelAlarm(alarm_%<Task[Index].Name>,%<Task[Index].Rate>,%<Task[Index].Rate>);
+      %endforeach
+    %endwith
+  }
+
+  void StopOS(void)
+  {
+    %if EXISTS(::ErikaEducational.NumberOfTasks)
+      %foreach idx = ::ErikaEducational.NumberOfTasks
+	CancelAlarm(alarm_%<::ErikaEducational.Task[idx].Name>);
+      %endforeach
+    %endif
+    %if CodeFormat == "Embedded-C"
+      %<::CompiledModel.Name>_terminate();
+    %else
+      MdlTerminate();
+    %endif
+  }
+    
+%endwith
+%closefile main
+
+%%
+%%
+%% makevars
+%<LibWriteToStandardOutput("### Writing makevars")>
+%openfile mkv = "%<CompiledModel.Name>_makevars"
+# makevars for model %<CompiledModel.Name>
+%foreach Index = CompiledModel.NumSystems
+  %with CompiledModel.System[Index]
+    %foreach Index = %<NumBlocks>
+      %with Block[Index]
+        %if EXISTS(ErikaDefine)
+# defines for block %<Name> 
+ERIKAOPT += %<ErikaDefine>
+	%endif
+      %endwith
+    %endforeach 
+  %endwith
+%endforeach
+
+%closefile mkv
+%%
+%%
+
+
+
+%% makefile
+%<LibWriteToStandardOutput("### Writing stub Makefile")>
+%openfile mkf = "Makefile"
+# stub makefile for model %<CompiledModel.Name>
+
+include %<CompiledModel.Name>.mk
+
+%closefile mkf
+
+%% kernel initialization
+%%
+%<LibWriteToStandardOutput("### Writing source file initkern.c")>
+%openfile kern = "initkern.c"
+/* File initkern.c for model %<CompiledModel.Name> */
+%with ErikaEducational
+#include "erika.h"
+#include "erikacfg.h"
+#include "alarms/alarms.h"
+
+/* ROM kernel descriptors */
+const ERIKA_TYPEPRIO ERIKA_th_ready_prio[THREAD_MAX] = {
+%foreach Index = %<NumberOfTasks>
+  %<Task[Index].PriorityReady>\
+%if Index != %<NumberOfTasks>-1
+,
+%else
+
+};
+%endif
+%endforeach
+
+const ERIKA_TYPEPRIO ERIKA_th_dispatch_prio[THREAD_MAX] = {
+%foreach Index = %<NumberOfTasks>
+  %<Task[Index].PriorityDispatch>\
+%if Index != %<NumberOfTasks>-1
+,
+%else
+
+};
+%endif
+%endforeach
+
+/* RAM kernel descriptors */
+#ifdef __MULTI__
+ERIKA_TYPESTATUS ERIKA_th_status[THREAD_MAX] = {
+%foreach Index = %<NumberOfTasks>
+  ERIKA_READY\
+%if Index != %<NumberOfTasks>-1
+,
+%else
+
+};
+%endif
+%endforeach
+#endif
+
+ERIKA_TYPENACT ERIKA_th_nact[THREAD_MAX] = {
+%foreach Index = %<NumberOfTasks>
+  0\
+%if Index != %<NumberOfTasks>-1
+,
+%else
+
+};
+%endif
+%endforeach
+
+ERIKA_TID ERIKA_th_next[THREAD_MAX] = {
+%foreach Index = %<NumberOfTasks>
+  ERIKA_NIL\
+%if Index != %<NumberOfTasks>-1
+,
+%else
+
+};
+%endif
+%endforeach
+
+ERIKA_TID ERIKA_rqfirst = ERIKA_NIL; 
+ERIKA_TID ERIKA_stkfirst = ERIKA_NIL; 
+
+// the ceiling of the first task;
+ERIKA_TYPEPRIO ERIKA_sys_ceiling= 0x0000; 
+
+/* ROM */
+const ERIKA_TYPEPRIO ERIKA_mutex_ceiling[MUTEX_MAX]= {0x02};
+/* RAM */
+ERIKA_TYPEPRIO ERIKA_mutex_oldceiling[MUTEX_MAX];
+
+ERIKA_counter_RAM_type       ERIKA_counter_RAM[] = { {0, -1} };
+
+/* Alarms */
+ERIKA_alarm_RAM_type         ERIKA_alarm_RAM[THREAD_MAX];
+const ERIKA_alarm_ROM_type   ERIKA_alarm_ROM[] = 
+{
+  %foreach Index = NumberOfTasks
+  {0, ERIKA_ALARM_ACTION_TASK, %<Index>, NULL }\
+    %if Index != NumberOfTasks-1
+,
+    %else
+
+};
+    %endif
+  %endforeach
+
+
+%endwith
+%closefile kern
+
+
+%% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+%%                       inithal.c
+%%
+%<LibWriteToStandardOutput("### Writing source file inithal.c")>
+%openfile hal = "inithal.c"
+%with ErikaEducational
+/* File inithal.c for model %<CompiledModel.Name> */
+
+#include "erikacfg.h"
+#include "erikahal.h"
+
+%foreach Index = %<NumberOfTasks>
+  void Func%<Task[Index].Name>(void);
+%endforeach
+
+/* ip of each thread body (ROM) */
+const ERIKA_ADDR ERIKA_h8_thread_body[THREAD_MAX] = {
+%foreach Index = %<NumberOfTasks>
+  (ERIKA_ADDR) Func%<Task[Index].Name>\
+%if Index != %<NumberOfTasks>-1
+,
+%else
+
+};
+%endif
+%endforeach
+%endwith
+
+%closefile hal
+
+%% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+%%                       erikacfg.h
+%%
+%assign TimerAPeriod = 400
+%<LibWriteToStandardOutput("### Writing header file erikacfg.h")>
+%openfile cfg = "erikacfg.h"
+/* File erikacfg.h for model %<CompiledModel.Name> */
+
+#ifndef __SRPTTEST_ERIKACFG_H__
+#define __SRPTTEST_ERIKACFG_H__
+
+#include "erikahal.h"
+
+%with ErikaEducational
+/* number of threads */
+#define THREAD_MAX %<NumberOfTasks>
+
+%foreach Index = %<NumberOfTasks>
+#define %<Task[Index].Name> %<Index> 
+#define alarm_%<Task[Index].Name> %<Index> 
+%endforeach
+%endwith
+
+#ifdef __TIMER_A_SUPPORT__
+    #define TIMER_A_PERIOD  %<TimerAPeriod> 
+#endif
+
+#define counter0 0
+
+#define MUTEX_MAX 1
+#define MUTEX_sync 0
+
+#endif
+%closefile cfg
+
+
+
+%% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+%%                       types.h
+%%
+%assign ErikaTypePrio = "ERIKA_INT16"
+%assign ErikaTypeStatus =  "ERIKA_UINT16"
+%assign ErikaTypeNact = "ERIKA_UINT16"
+%assign ErikaTypeMutex = "ERIKA_UINT16"
+%assign ErikaTypeRelDLine = "ERIKA_UINT16"
+%assign ErikaTypeAbsDLine = "ERIKA_UINT16"
+%assign ErikaTypeAlarm =  "ERIKA_INT8"
+%assign ErikaTypeCounter =   "ERIKA_INT8"
+%assign ErikaTypeTick = "ERIKA_UINT16"
+%assign ErikaTypeNotify =   "ERIKA_INT8"
+%<LibWriteToStandardOutput("### Writing header file types.h")>
+%openfile types = "types.h"
+/* File types.h for model %<CompiledModel.Name> */
+#ifndef __SRPTTEST_TYPES_H__
+#define __SRPTTEST_TYPES_H__
+
+
+/* HAL types */
+%% Task id
+%if ErikaEducational.NumberOfTasks <= 8
+  typedef ERIKA_INT8 ERIKA_TID;
+%elseif ErikaEducational.NumberOfTasks <= 16
+  typedef ERIKA_INT16 ERIKA_TID;
+%else
+  %error Too many tasks (%<NumberOfTasks>)
+  %exit
+%endif
+%%
+/* Kernel types */
+%%
+typedef %<ErikaTypePrio> ERIKA_TYPEPRIO;
+typedef %<ErikaTypeStatus>  ERIKA_TYPESTATUS;
+typedef %<ErikaTypeNact> ERIKA_TYPENACT;
+typedef %<ErikaTypeMutex> ERIKA_MUTEX;
+typedef %<ErikaTypeRelDLine> ERIKA_TYPERELDLINE;
+typedef %<ErikaTypeAbsDLine> ERIKA_TYPEABSDLINE;
+typedef %<ErikaTypeAlarm>   ERIKA_TYPEALARM;
+typedef %<ErikaTypeCounter>   ERIKA_TYPECOUNTER;
+typedef %<ErikaTypeTick> ERIKA_TYPETICK;
+typedef %<ErikaTypeNotify>   ERIKA_TYPENOTIFY;
+
+#endif
+%closefile types
+
+
+
+
+%% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+%%                       handlers.s
+%%
+%<LibWriteToStandardOutput("### Writing source assembler file handlers.s")>
+%openfile han = "handlers.s"
+;; File handlers.s for model %<CompiledModel.Name> 
+;;
+;; Install interrupt handlers
+.include "handstub.s"
+
+;;  handlers installed by system
+.ifdef __TIMER_A_SUPPORT__
+  M_set_handler ERIKA_timerA_handler    
+.endif
+.ifdef __TIMER_B_SUPPORT__
+  M_set_handler ERIKA_timerB_handler
+.endif
+
+;;  handlers installed by your application 
+%foreach Index = CompiledModel.NumSystems
+  %with CompiledModel.System[Index]
+    %foreach Index = %<NumBlocks>
+      %with Block[Index]
+         %if EXISTS(InterruptHandler)
+  M_set_handler %<InterruptHandler>
+         %endif
+      %endwith
+    %endforeach
+  %endwith
+%endforeach
+
+%closefile han

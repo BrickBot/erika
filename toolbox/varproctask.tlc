@@ -1,0 +1,115 @@
+%%
+%% Project: E.R.I.K.A. - Embedded Real tIme Kernel Architecture
+%%
+%% http://erika.sssup.it
+%%
+%% Copyright (C) 2004 Riccardo Vestrini
+%%
+%% This program is distributed under the license contained into the
+%% license.txt file on the E.R.I.K.A. root directory.
+%%
+%%
+
+%include "erikatlclib.tlc"
+
+/% if you set this option, variables can be defined in function 
+  (like MODEL_output() ) which are not used %/
+%if LocalBlockOutputs == 1
+  %warning Local Block Outputs must be unset
+  %assign LocalBlockOutputs = 0
+%endif
+
+%with CompiledModel
+  %foreach sysIdx = NumSystems
+    %if (System[sysIdx].NumChildSystems==0)
+      %assign System[sysIdx].RTWSystemCode = 1
+      %if EXISTS(System[sysIdx].StartFcn) == 1
+	%assign System[sysIdx].StartFcn = "%<LibCodeBlockName(System[sysIdx].Name)>_Start"
+      %endif
+      %if EXISTS(System[sysIdx].OutputUpdateFcn) == 1
+	%assign System[sysIdx].OutputUpdateFcn = "%<LibCodeBlockName(System[sysIdx].Name)>_OutputUpdate"
+      %endif
+      %if EXISTS(System[sysIdx].UpdateFcn) == 1
+	%assign System[sysIdx].UpdateFcn = "%<LibCodeBlockName(System[sysIdx].Name)>_Update"
+      %endif
+      %if EXISTS(System[sysIdx].OutputFcn) == 1
+	%assign System[sysIdx].OutputFcn = "%<LibCodeBlockName(System[sysIdx].Name)>_Output"
+      %endif
+      %if EXISTS(System[sysIdx].EnableFcn) == 1
+	%assign System[sysIdx].EnableFcn = "%<LibCodeBlockName(System[sysIdx].Name)>_Enable"
+      %endif
+      %if EXISTS(System[sysIdx].DisableFcn) == 1
+	%assign System[sysIdx].DisableFcn = "%<LibCodeBlockName(System[sysIdx].Name)>_Disable"
+      %endif
+      %if EXISTS(System[sysIdx].TerminateFcn) == 1
+	%assign System[sysIdx].TerminateFcn = "%<LibCodeBlockName(System[sysIdx].Name)>_Terminate"
+      %endif
+    %endif
+  %endforeach
+%endwith
+
+
+
+%with CompiledModel
+  %% include le variabili necessarie prodotte durante l'analisi di schedulabilità
+  %if ::TaskCF == 1
+    %include "%<Name>_tasks.tlc"
+  %else
+    %warning Task configuration file %<Name>_tasks.tlc not found
+    %assign BaseRate = CAST("Number", FixedStepOpts.FixedStep*1000)
+    %warning Setting a base rate of %<BaseRate> for tasks
+
+    %assign ErikaEducational.NumberOfTasks = NumSystems-1
+    %foreach sysIdx = NumSystems - 1
+      %assign sysName = SYSNAME(System[sysIdx].Name)
+      %addtorecord ErikaEducational Task { ...
+	Name "task_%<sysName[1]>";  ...
+	PriorityReady "%<1<<sysIdx>"; ...
+	PriorityDispatch "%<1<<sysIdx>"; ...
+	NumberOfProcs 0; Rate %<BaseRate> }
+      %with ErikaEducational 
+	%assign sysName = SYSNAME(CompiledModel.System[sysIdx].Name)
+	%if EXISTS(CompiledModel.System[sysIdx].OutputUpdateFcn)
+	  %addtorecord Task[sysIdx] ...
+	    Proc { Name "function_%<sysName[1]>_OutputUpdate"}
+	  %assign Task[sysIdx].NumberOfProcs = 1 + Task[sysIdx].NumberOfProcs
+	%endif
+	%if EXISTS(CompiledModel.System[sysIdx].OutputFcn)
+	  %addtorecord Task[sysIdx] ...
+	    Proc { Name "function_%<sysName[1]>_Output"}
+	  %assign Task[sysIdx].NumberOfProcs = 1 + Task[sysIdx].NumberOfProcs
+	%endif
+	%if EXISTS(CompiledModel.System[sysIdx].UpdateFcn)
+	  %addtorecord Task[sysIdx] ...
+	    Proc { Name "function_%<sysName[1]>_Update"}
+	  %assign Task[sysIdx].NumberOfProcs = 1 + Task[sysIdx].NumberOfProcs
+	%endif
+      %endwith
+    %endforeach
+
+    %openfile exm = "%<CompiledModel.Name>_tasks_example.tlc"
+    
+    %with ErikaEducational
+      %assign BaseRate = CAST("Number", CompiledModel.FixedStepOpts.FixedStep*1000)
+      c%assign ErikaEducational.NumberOfTasks = 1
+      %foreach sysIdx = NumberOfTasks
+	%with Task[sysIdx]
+	  c%addtorecord ErikaEducational Task { ...
+	    Name "task_%<Name>";  ...
+	    PriorityReady "%<PriorityReady>"; ...
+	    PriorityDispatch "%<PriorityDispatch>"; ...
+	    Rate %<Rate>;  ...
+	    NumberOfProcs %<NumberOfProcs>; ..\.
+	   } 
+	    %foreach np = NumberOfProcs
+	      a%addtorecord Task[sysIdx] Proc { Name "%<Proc[np].Name>" } 
+	    %endforeach
+	%endwith
+      %endforeach
+    %endwith
+    }
+    %closefile exm
+  %endif
+%endwith
+
+
