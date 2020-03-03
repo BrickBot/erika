@@ -13,8 +13,8 @@ are no makefiles in the source directories (!).
 
 To compile, you need the gcc compiler recompiled for H8.
 
-You can use gcc-3 to compile Erika, add \__GCC3__ option, this enables newlib
-support, if you do not want newlib use \__NO_NEWLIB__ option
+You can use gcc-3 to compile Erika, add \_\_GCC3__ option, this enables newlib
+support, if you do not want newlib use \_\_NO_NEWLIB__ option
 
 To use Matlab toolbox you need to change /home/riccardo/erika to your
 E.R.I.K.A. directory in erika.m and in every file found in toolbox dir,
